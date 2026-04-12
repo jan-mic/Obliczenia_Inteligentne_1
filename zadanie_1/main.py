@@ -272,7 +272,7 @@ if __name__ == '__main__':
 
     for i in range(2, 4):
         for j in range(1, 4):
-            X, y_true = load(f'data/{i}_{j}.csv')
+            X, y_true = load(f'../data/{i}_{j}.csv')
             method_k_means(X, y_true, i, j)
             method_dbscan(X, y_true, i, j)
 
