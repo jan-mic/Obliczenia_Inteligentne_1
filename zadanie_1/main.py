@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from matplotlib.colors import ListedColormap
 from sklearn.cluster import KMeans, DBSCAN
-from sklearn.datasets import load_iris, load_wine, load_breast_cancer
+from sklearn.datasets import load_iris, load_wine
 from sklearn.metrics import silhouette_score, adjusted_rand_score, homogeneity_score, completeness_score
 from scipy.spatial import Voronoi
 from matplotlib import colormaps
@@ -64,7 +64,7 @@ def method_k_means(X, y_true, file_i, file_j):
         draw_voronoi_diagram_kmeans(range_n_clusters[average_scores.argmin()], X, y_true, file_i, file_j,
                                     info_average_worst, "worst_avg")
     else:
-        print(f'>>> Data: {file_j} | Method: K-Means <<<')
+        print(f'Data: {file_j} | Method: K-Means')
         print('Experiment: 1')
         print(
             f'Best Silhouette score: {silhouette_scores.max().round(3)} | Clusters: {range_n_clusters[silhouette_scores.argmax()]}')
@@ -75,7 +75,7 @@ def method_k_means(X, y_true, file_i, file_j):
             f'Best Average Score: {average_scores.max().round(3)} | Clusters: {range_n_clusters[average_scores.argmax()]}')
         print(
             f'Worst Average Score: {average_scores.min().round(3)} | Clusters: {range_n_clusters[average_scores.argmin()]}')
-        print('=====================================================')
+        print('===================================================')
 
 
 def draw_voronoi_diagram_kmeans(n_clusters, X, y_true, file_i, file_j, info, suffix):
@@ -108,8 +108,6 @@ def method_dbscan(X, y_true, file_i, file_j):
     eps_values = np.arange(0.01, 1.7, 0.05)
     if file_j == 'Wine':
         eps_values = np.arange(1.0, 3.0, 0.05)
-    if file_j == 'Breast cancer':
-        eps_values = np.arange(1.2, 3.7, 0.05)
 
     ars_values = []
     hs_values = []
@@ -164,7 +162,7 @@ def method_dbscan(X, y_true, file_i, file_j):
         draw_voronoi_diagram_dbscan(eps_values[average_scores.argmin()], X, y_true, file_i, file_j, info_average_worst,
                                     "worst_avg")
     else:
-        print(f'>>> Data: {file_j} | Method: DBSCAN <<<')
+        print(f'Data: {file_j} | Method: DBSCAN')
         print('Experiment: 1')
         print(
             f'Best Silhouette score: {silhouette_scores.max().round(3)} Epsilon: {eps_values[silhouette_scores.argmax()].round(3)} | Clusters: {n_clusters_list[silhouette_scores.argmax()]}')
@@ -176,7 +174,7 @@ def method_dbscan(X, y_true, file_i, file_j):
             f'Best Average Score: {average_scores.max().round(3)} Epsilon: {eps_values[average_scores.argmax()].round(3)} | Clusters: {n_clusters_list[average_scores.argmax()]}')
         print(
             f'Worst Average Score: {average_scores.min().round(3)} Epsilon: {eps_values[average_scores.argmin()].round(3)} | Clusters: {n_clusters_list[average_scores.argmin()]}')
-        print('=====================================================')
+        print('===================================================')
 
 
 def draw_voronoi_diagram_dbscan(eps, X, y_true, file_i, file_j, info, suffix):
@@ -203,13 +201,15 @@ def draw_experiment_1_dbscan(eps_values, silhouette_scores, n_clusters_list, fil
         plt.title(f'Experiment: 1 | Method: DBSCAN | Data: {file_i}_{file_j}', fontsize=10)
     plt.xlabel('Eps')
     plt.ylabel('Silhouette score')
+    plt.ylim(-0.4, 1.0)
     plt.legend(['silhouette'])
     title_suffix = f'{file_j}' if file_i == 0 else f'{file_i}_{file_j}'
-    plt.savefig(f'wykresy/exp1_dbscan{title_suffix}.png', bbox_inches='tight')
+    plt.savefig(f'wykresy/exp1_dbscan_{title_suffix}.png', bbox_inches='tight')
     plt.close()
 
 
 def draw_experiment_2(x_values, ars_values, hs_values, cs_values, file_i, file_j, method):
+    method_name = ''
     plt.figure(figsize=(8, 6))
     plt.plot(x_values, ars_values, marker='o', markersize=3, label='Adjusted Rand')
     plt.plot(x_values, hs_values, marker='o', markersize=3, label='Homogeneity')
@@ -221,14 +221,16 @@ def draw_experiment_2(x_values, ars_values, hs_values, cs_values, file_i, file_j
         plt.title(f'Experiment: 2 | Method: {method} | Data: {file_i}_{file_j}.csv')
     if method == 'K-Means':
         plt.xlabel('Number of clusters')
+        method_name = 'kmeans'
     if method == 'DBSCAN':
         plt.xlabel('Eps')
+        method_name = 'dbscan'
     plt.ylabel('Wartość')
     plt.ylim(-0.05, 1.05)
     plt.legend()
     plt.grid(True)
     title_suffix = f'{file_j}' if file_i == 0 else f'{file_i}_{file_j}'
-    plt.savefig(f'wykresy/exp2_{method}_{title_suffix}.png', bbox_inches='tight')
+    plt.savefig(f'wykresy/exp2_{method_name}_{title_suffix}.png', bbox_inches='tight')
     plt.close()
 
 def plot_voronoi_diagram(X, y_true, y_pred, file_i, file_j, info, suffix):
