@@ -174,6 +174,14 @@ def experiment_2_and_3_knn(X, y, experiment, j):
     else:
         X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.2, test_size=0.2, random_state=42)
 
+    file_j = j
+    if j == 'iris':
+        j = 0
+        file_j = 'iris'
+    elif j == 'wine':
+        j = 0
+        file_j = 'wine'
+
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
@@ -205,54 +213,56 @@ def experiment_2_and_3_knn(X, y, experiment, j):
             best_model = model
             best_n = n
 
-    plot_accuracy(train_scores, test_scores, n_neighbors_list, 'n_neighbors', f'Data: 2_{j}.csv | KNN', j,
+    plot_accuracy(train_scores, test_scores, n_neighbors_list, 'n_neighbors', f'Data: 2_{j}.csv | KNN', file_j,
                   f'exp_{experiment}_knn')
 
     # data: train
     if j != 0:
         plot_decision_boundary(X_train, y_train, models[0],
-                               f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Train', j,
+                               f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Train', file_j,
                                f'exp_{experiment}_knn_train')
     y_pred = models[0].predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Train', j,
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Train', file_j,
                    f'exp_{experiment}_knn_train')
 
     if j != 0:
-        plot_decision_boundary(X_train, y_train, best_model, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Train', j,
+        plot_decision_boundary(X_train, y_train, best_model, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Train',
+                               file_j,
                                f'exp_{experiment}_knn_train')
     y_pred = best_model.predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Train', j,
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Train', file_j,
                    f'exp_{experiment}_knn_train')
 
     if j != 0:
         plot_decision_boundary(X_train, y_train, models[-1],
-                               f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Train', j,
+                               f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Train', file_j,
                                f'exp_{experiment}_knn_train')
     y_pred = models[-1].predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Train', j,
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Train', file_j,
                    f'exp_{experiment}_knn_train')
 
     # data: test
     if j != 0:
         plot_decision_boundary(X_test, y_test, models[0], f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Test',
-                               j, f'exp_{experiment}_knn_test')
+                               file_j, f'exp_{experiment}_knn_test')
     y_pred = models[0].predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Test', j,
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={first_value} | Test', file_j,
                    f'exp_{experiment}_knn_test')
 
     if j != 0:
-        plot_decision_boundary(X_test, y_test, best_model, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Test', j,
+        plot_decision_boundary(X_test, y_test, best_model, f'Data: 2_{file_j}.csv | KNN | n_neighbors={best_n} | Test',
+                               file_j,
                                f'exp_{experiment}_knn_test')
     y_pred = best_model.predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Test', j,
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={best_n} | Test', file_j,
                    f'exp_{experiment}_knn_test')
 
     if j != 0:
         plot_decision_boundary(X_test, y_test, models[-1],
-                               f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Test', j,
+                               f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Test', file_j,
                                f'exp_{experiment}_knn_test')
     y_pred = models[-1].predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Test', j,
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | KNN | n_neighbors={last_value - 1} | Test', file_j,
                    f'exp_{experiment}_knn_test')
 
 
@@ -261,6 +271,14 @@ def experiment_2_and_3_svm(X, y, experiment, j):
         X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=42)
     else:
         X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.2, test_size=0.2, random_state=42)
+
+    file_j = j
+    if j == 'iris':
+        j = 0
+        file_j = 'iris'
+    elif j == 'wine':
+        j = 0
+        file_j = 'wine'
 
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
@@ -299,45 +317,50 @@ def experiment_2_and_3_svm(X, y, experiment, j):
     x_label = 'log(C)'
     info = 'SVM | C'
     range_x = np.arange(start_value, stop_value + 1)
-    plot_accuracy(train_scores, test_scores, range_x, x_label, f'Data: 2_{j}.csv | SVM', j, f'exp_{experiment}_svm')
+    plot_accuracy(train_scores, test_scores, range_x, x_label, f'Data: 2_{j}.csv | SVM', file_j,
+                  f'exp_{experiment}_svm')
 
     # data: train
     if j != 0:
-        plot_decision_boundary(X_train, y_train, models[0], f'Data: 2_{j}.csv | SVM | C={first_value} | Train', j,
+        plot_decision_boundary(X_train, y_train, models[0], f'Data: 2_{j}.csv | SVM | C={first_value} | Train', file_j,
                                f'exp_{experiment}_svm_train')
     y_pred = models[0].predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={first_value} | Train', j, f'exp_{experiment}_svm_train')
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={first_value} | Train', file_j,
+                   f'exp_{experiment}_svm_train')
 
     if j != 0:
-        plot_decision_boundary(X_train, y_train, best_model, f'Data: 2_{j}.csv {info}={best_C} | Train', j,
+        plot_decision_boundary(X_train, y_train, best_model, f'Data: 2_{j}.csv {info}={best_C} | Train', file_j,
                                f'exp_{experiment}_svm_train')
     y_pred = best_model.predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={best_C} | Train', j, f'exp_{experiment}_svm_train')
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={best_C} | Train', file_j, f'exp_{experiment}_svm_train')
 
     if j != 0:
         plot_decision_boundary(X_train, y_train, models[-1],
-                               f'Data: 2_{j}.csv | {info}={last_value} | Train', j, f'exp_{experiment}_svm_train')
+                               f'Data: 2_{j}.csv | {info}={last_value} | Train', file_j, f'exp_{experiment}_svm_train')
     y_pred = models[-1].predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={last_value} | Train', j, f'exp_{experiment}_svm_train')
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={last_value} | Train', file_j,
+                   f'exp_{experiment}_svm_train')
 
     # data: test
     if j != 0:
-        plot_decision_boundary(X_test, y_test, models[0], f'Data: 2_{j}.csv | {info}={first_value} | Test', j,
+        plot_decision_boundary(X_test, y_test, models[0], f'Data: 2_{j}.csv | {info}={first_value} | Test', file_j,
                                f'exp_{experiment}_svm_test')
     y_pred = models[0].predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={first_value} | Test', j, f'exp_{experiment}_svm_test')
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={first_value} | Test', file_j,
+                   f'exp_{experiment}_svm_test')
 
     if j != 0:
-        plot_decision_boundary(X_test, y_test, best_model, f'Data: 2_{j}.csv | {info}={best_C} | Test', j,
+        plot_decision_boundary(X_test, y_test, best_model, f'Data: 2_{j}.csv | {info}={best_C} | Test', file_j,
                                f'exp_{experiment}_svm_test')
     y_pred = best_model.predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={best_C} | Test', j, f'exp_{experiment}_svm_test')
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={best_C} | Test', file_j, f'exp_{experiment}_svm_test')
 
     if j != 0:
         plot_decision_boundary(X_test, y_test, models[-1],
-                               f'Data: 2_{j}.csv | {info}={last_value} | Test', j, f'exp_{experiment}_svm_test')
+                               f'Data: 2_{j}.csv | {info}={last_value} | Test', file_j, f'exp_{experiment}_svm_test')
     y_pred = models[-1].predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={last_value} | Test', j, f'exp_{experiment}_svm_test')
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={last_value} | Test', file_j,
+                   f'exp_{experiment}_svm_test')
 
 
 def experiment_2_and_3_mlp(X, y, experiment, j):
@@ -345,6 +368,14 @@ def experiment_2_and_3_mlp(X, y, experiment, j):
         X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=42)
     else:
         X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.2, test_size=0.2, random_state=42)
+
+    file_j = j
+    if j == 'iris':
+        j = 0
+        file_j = 'iris'
+    elif j == 'wine':
+        j = 0
+        file_j = 'wine'
 
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
@@ -384,53 +415,54 @@ def experiment_2_and_3_mlp(X, y, experiment, j):
 
     x_label = 'hidden_layer_size'
     info = 'MLP | neurons'
-    plot_accuracy(train_scores, test_scores, hidden_layer_sizes_list, x_label, f'Data: 2_{j}.csv | MLP', j,
+    plot_accuracy(train_scores, test_scores, hidden_layer_sizes_list, x_label, f'Data: 2_{j}.csv | MLP', file_j,
                   f'exp_{experiment}mlp')
 
     # data: train
     if j != 0:
         plot_decision_boundary(X_train, y_train, models[0],
-                               f'Data: 2_{j}.csv | MLP | neurons={hidden_layer_sizes_list[0]} | Train', j,
+                               f'Data: 2_{j}.csv | MLP | neurons={hidden_layer_sizes_list[0]} | Train', file_j,
                                f'exp_{experiment}_mlp_train')
     y_pred = models[0].predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[0]} | Train', j,
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[0]} | Train', file_j,
                    f'exp_{experiment}mlp_train')
 
     if j != 0:
-        plot_decision_boundary(X_train, y_train, best_model, f'Data: 2_{j}.csv {info}={best_size} | Train', j,
+        plot_decision_boundary(X_train, y_train, best_model, f'Data: 2_{j}.csv {info}={best_size} | Train', file_j,
                                f'exp_{experiment}_mlp_train')
     y_pred = best_model.predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={best_size} | Train', j, f'exp_{experiment}_mlp_train')
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={best_size} | Train', file_j,
+                   f'exp_{experiment}_mlp_train')
 
     if j != 0:
         plot_decision_boundary(X_train, y_train, models[-1],
-                               f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Train', j,
+                               f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Train', file_j,
                                f'exp_{experiment}_mlp_train')
     y_pred = models[-1].predict(X_train)
-    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Train', j,
+    plot_confusion(y_train, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Train', file_j,
                    f'exp_{experiment}_mlp_train')
 
     # data: test
     if j != 0:
         plot_decision_boundary(X_test, y_test, models[0],
-                               f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[0]} | Test', j,
+                               f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[0]} | Test', file_j,
                                f'exp_{experiment}_mlp_test')
     y_pred = models[0].predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[0]} | Test', j,
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[0]} | Test', file_j,
                    f'exp_{experiment}_mlp_test')
 
     if j != 0:
-        plot_decision_boundary(X_test, y_test, best_model, f'Data: 2_{j}.csv | {info}={best_size} | Test', j,
+        plot_decision_boundary(X_test, y_test, best_model, f'Data: 2_{j}.csv | {info}={best_size} | Test', file_j,
                                f'exp_{experiment}_mlp_test')
     y_pred = best_model.predict(X_test)
     plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | K{info}={best_size} | Test', j, f'exp_{experiment}mlp_test')
 
     if j != 0:
         plot_decision_boundary(X_test, y_test, models[-1],
-                               f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Test', j,
+                               f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Test', file_j,
                                f'exp_{experiment}_mlp_test')
     y_pred = models[-1].predict(X_test)
-    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Test', j,
+    plot_confusion(y_test, y_pred, f'Data: 2_{j}.csv | {info}={hidden_layer_sizes_list[-1]} | Test', file_j,
                    f'exp_{experiment}_mlp_test')
 
 
@@ -561,11 +593,11 @@ if __name__ == "__main__":
     iris = load_iris()
     wine = load_wine()
 
-    experiment_2_and_3_knn(iris.data, iris.target, 1, '0_wine')
-    experiment_2_and_3_knn(wine.data, wine.target, 1, '0_wine')
+    experiment_2_and_3_knn(iris.data, iris.target, 1, 'iris')
+    experiment_2_and_3_knn(wine.data, wine.target, 1, 'wine')
 
-    experiment_2_and_3_svm(iris.data, iris.target, 1, '0_iris')
-    experiment_2_and_3_svm(wine.data, wine.target, 1, '0_wine')
+    experiment_2_and_3_svm(iris.data, iris.target, 1, 'iris')
+    experiment_2_and_3_svm(wine.data, wine.target, 1, 'wine')
 
-    experiment_2_and_3_mlp(iris.data, iris.target, 1, '0_iris')
-    experiment_2_and_3_mlp(wine.data, wine.target, 1, '0_wine')
+    experiment_2_and_3_mlp(iris.data, iris.target, 1, 'iris')
+    experiment_2_and_3_mlp(wine.data, wine.target, 1, 'wine')
