@@ -8,6 +8,8 @@ from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
+from sklearn.exceptions import ConvergenceWarning
+import warnings
 import matplotlib.pyplot as plt
 import copy
 
@@ -529,6 +531,7 @@ def experiment_4_mlp(X, y, experiment, j, random_state, iteration):
 
 if __name__ == "__main__":
     os.makedirs('wykresy', exist_ok=True)
+    warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
     for j in range(1, 4):
         X, y_true = load(f'data/2_{j}.csv')
