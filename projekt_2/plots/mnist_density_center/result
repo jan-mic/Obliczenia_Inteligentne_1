@@ -1,0 +1,17 @@
+====================================
+BEST SEPARATED PAIRS
+====================================
+0 vs 1 | Silhouette: 0.4958 | ARI: 0.8594
+1 vs 8 | Silhouette: 0.4285 | ARI: 0.7728
+1 vs 2 | Silhouette: 0.4243 | ARI: 0.7247
+1 vs 3 | Silhouette: 0.4087 | ARI: 0.6684
+4 vs 7 | Silhouette: 0.4045 | ARI: 0.0574
+
+====================================
+WORST SEPARATED PAIRS
+====================================
+0 vs 7 | Silhouette: 0.3508 | ARI: 0.4526
+0 vs 6 | Silhouette: 0.3508 | ARI: 0.1275
+0 vs 4 | Silhouette: 0.3406 | ARI: 0.2280
+0 vs 5 | Silhouette: 0.3344 | ARI: 0.0042
+0 vs 9 | Silhouette: 0.3328 | ARI: 0.0010
