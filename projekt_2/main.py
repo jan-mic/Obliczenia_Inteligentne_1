@@ -125,10 +125,10 @@ def main(dataset_name="mnist_flatten"):
 
 if __name__ == "__main__":
 
-    main("iris")
-    main("wine")
-    main("mnist_flatten")
-    main("mnist_density_center")
-    main("mnist_symmetry")
+    # main("iris")
+    # main("wine")
+    # main("mnist_flatten")
+    # main("mnist_density_center")
+    # main("mnist_symmetry")
     main("mnist_grid_feature")
-    main("mnist_projection_feature")
+    # main("mnist_projection_feature")

@@ -2,6 +2,7 @@ import os
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 
 from sklearn.metrics import (
@@ -102,12 +103,17 @@ class Predictor:
         plt.savefig(path, bbox_inches="tight", dpi=150)
         plt.close()
 
-    def save_decision_boundary(self, model, y_true):
-
-        if self.X_test.shape[1] != 2:
+    def save_decision_boundary(
+            self,
+            model,
+            X,
+            y_true,
+            split="test"
+    ):
+        if X.shape[1] != 2:
             return
 
-        x = self.X_test.numpy()
+        x = X.numpy()
 
         x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
         y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
@@ -121,50 +127,92 @@ class Predictor:
 
         grid = np.c_[xx.ravel(), yy.ravel()]
 
-        grid_tensor = torch.tensor(grid, dtype=torch.float32)
+        grid_tensor = torch.tensor(
+            grid,
+            dtype=torch.float32
+        )
 
         with torch.no_grad():
             logits = model(grid_tensor)
-            predictions = torch.argmax(logits, dim=1).numpy()
+
+            predictions = torch.argmax(
+                logits,
+                dim=1
+            ).numpy()
 
         predictions = predictions.reshape(xx.shape)
 
+        unique_classes = np.unique(y_true)
+
+        base_colors = plt.cm.tab10(
+            np.linspace(0, 1, len(unique_classes))
+        )
+
+        cmap = ListedColormap(base_colors)
+
         fig, ax = plt.subplots(figsize=(9, 7))
 
-        ax.contourf(xx, yy, predictions, alpha=0.35, cmap="tab10")
+        ax.contourf(
+            xx,
+            yy,
+            predictions,
+            alpha=0.35,
+            cmap=cmap,
+            levels=np.arange(len(unique_classes) + 1) - 0.5
+        )
 
-        ax.scatter(
+        scatter = ax.scatter(
             x[:, 0],
             x[:, 1],
             c=y_true,
-            cmap="tab10",
+            cmap=cmap,
             edgecolors="black",
             linewidths=0.3,
             s=20
         )
 
-        plt.title(f"Decision Boundary: {self.dataset_name}")
+        with torch.no_grad():
+            logits = model(X)
+            y_pred = torch.argmax(logits, dim=1).numpy()
+
+        acc = accuracy_score(y_true, y_pred)
+
+        plt.title(
+            f"Decision Boundary ({split}) | "
+            f"{self.dataset_name} | "
+            f"accuracy: {acc:.4f}"
+        )
+
         plt.xlabel("Feature 1")
         plt.ylabel("Feature 2")
+
         plt.grid(True)
 
-        unique_classes = np.unique(y_true)
-
-        colors = plt.cm.tab10(np.linspace(0, 1, len(unique_classes)))
-
         legend_handles = [
-            Patch(color=colors[i], label=f"Class {cls}")
+            Patch(
+                color=base_colors[i],
+                label=f"Class {cls}"
+            )
             for i, cls in enumerate(unique_classes)
         ]
 
-        ax.legend(handles=legend_handles, title="Classes", loc="upper right")
+        ax.legend(
+            handles=legend_handles,
+            title="Classes",
+            loc="upper right"
+        )
 
         path = os.path.join(
             OUTPUT_DIR,
-            f"decision_boundary_{self.dataset_name}.png"
+            f"decision_boundary_{self.dataset_name}_{split}.png"
         )
 
-        plt.savefig(path, bbox_inches="tight", dpi=150)
+        plt.savefig(
+            path,
+            bbox_inches="tight",
+            dpi=150
+        )
+
         plt.close()
 
     def run(self):
@@ -182,19 +230,31 @@ class Predictor:
         self.save_confusion_matrix(y_true_test, y_pred_test, "test")
         self.save_confusion_matrix(y_true_train, y_pred_train, "train")
 
-        self.save_decision_boundary(model, y_true_test)
+        self.save_decision_boundary(
+            model,
+            self.X_test,
+            y_true_test,
+            "test"
+        )
+
+        self.save_decision_boundary(
+            model,
+            self.X_train,
+            y_true_train,
+            "train"
+        )
 
 
 def main():
 
     models = {
-        "mnist_flatten": "mnist_flatten.pth",
+        # "mnist_flatten": "mnist_flatten.pth",
         "mnist_density_center": "mnist_density_center.pth",
         "mnist_symmetry": "mnist_symmetry.pth",
-        "mnist_grid_feature": "mnist_grid_feature.pth",
-        "mnist_projection_feature": "mnist_projection_feature.pth",
-        "iris": "iris.pth",
-        "wine": "wine.pth"
+        # "mnist_grid_feature": "mnist_grid_feature.pth",
+        # "mnist_projection_feature": "mnist_projection_feature.pth",
+        # "iris": "iris.pth",
+        # "wine": "wine.pth"
     }
 
     for dataset_name, model_path in models.items():

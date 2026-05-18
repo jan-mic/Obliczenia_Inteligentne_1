@@ -9,10 +9,10 @@ MODEL: iris
 ----------------------------------------
 MODEL: mnist_density_center
   file: mnist_density_center.pth
-  best_accuracy: 0.2775
+  best_accuracy: 0.2768
   config:
     - hidden_dim: 256
-    - learning_rate: 0.01
+    - learning_rate: 0.1
     - epochs: 150
 ----------------------------------------
 MODEL: mnist_flatten
@@ -41,10 +41,10 @@ MODEL: mnist_projection_feature
 ----------------------------------------
 MODEL: mnist_symmetry
   file: mnist_symmetry.pth
-  best_accuracy: 0.2648
+  best_accuracy: 0.2791
   config:
-    - hidden_dim: 512
-    - learning_rate: 0.01
+    - hidden_dim: 64
+    - learning_rate: 0.1
     - epochs: 150
 ----------------------------------------
 MODEL: wine
