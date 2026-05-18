@@ -303,7 +303,7 @@ class PairwiseSeparabilityAnalyzer:
 
         best_results = sorted(
             results,
-            key=lambda x: x["silhouette"],
+            key=lambda x: x["ari"],
             reverse=True
         )
 

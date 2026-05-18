@@ -1,0 +1,57 @@
+===== SAVED MODELS CONFIGS =====
+MODEL: iris
+  file: iris.pth
+  best_accuracy: 0.9
+  config:
+    - hidden_dim: 64
+    - learning_rate: 0.1
+    - epochs: 150
+----------------------------------------
+MODEL: mnist_density_center
+  file: mnist_density_center.pth
+  best_accuracy: 0.2775
+  config:
+    - hidden_dim: 256
+    - learning_rate: 0.01
+    - epochs: 150
+----------------------------------------
+MODEL: mnist_flatten
+  file: mnist_flatten.pth
+  best_accuracy: 0.9779
+  config:
+    - hidden_dim: 512
+    - learning_rate: 0.1
+    - epochs: 150
+----------------------------------------
+MODEL: mnist_grid_feature
+  file: mnist_grid_feature.pth
+  best_accuracy: 0.8689
+  config:
+    - hidden_dim: 512
+    - learning_rate: 0.1
+    - epochs: 150
+----------------------------------------
+MODEL: mnist_projection_feature
+  file: mnist_projection_feature.pth
+  best_accuracy: 0.9241
+  config:
+    - hidden_dim: 256
+    - learning_rate: 0.1
+    - epochs: 150
+----------------------------------------
+MODEL: mnist_symmetry
+  file: mnist_symmetry.pth
+  best_accuracy: 0.2648
+  config:
+    - hidden_dim: 512
+    - learning_rate: 0.01
+    - epochs: 150
+----------------------------------------
+MODEL: wine
+  file: wine.pth
+  best_accuracy: 0.9722222222222222
+  config:
+    - hidden_dim: 128
+    - learning_rate: 0.001
+    - epochs: 150
+----------------------------------------

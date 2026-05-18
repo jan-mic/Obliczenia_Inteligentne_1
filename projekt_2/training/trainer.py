@@ -1,6 +1,4 @@
-import os
 import torch
-
 
 class Trainer:
 
@@ -24,7 +22,6 @@ class Trainer:
         self.optimizer = optimizer
 
         self.dataset_name = dataset_name
-
         self.device = device
 
     def train_epoch(self):
@@ -40,31 +37,20 @@ class Trainer:
             x = x.to(self.device)
             y = y.to(self.device)
 
-            # forward
             outputs = self.model(x)
-
             loss = self.criterion(outputs, y)
 
-            # backward
             self.optimizer.zero_grad()
-
             loss.backward()
-
             self.optimizer.step()
 
-            # stats
             total_loss += loss.item()
 
             predictions = outputs.argmax(dim=1)
-
             correct += (predictions == y).sum().item()
-
             total += y.size(0)
 
-        avg_loss = total_loss / len(self.train_loader)
-        accuracy = correct / total
-
-        return avg_loss, accuracy
+        return total_loss / len(self.train_loader), correct / total
 
     def evaluate(self):
 
@@ -82,25 +68,17 @@ class Trainer:
                 y = y.to(self.device)
 
                 outputs = self.model(x)
-
                 loss = self.criterion(outputs, y)
 
                 total_loss += loss.item()
 
                 predictions = outputs.argmax(dim=1)
-
                 correct += (predictions == y).sum().item()
-
                 total += y.size(0)
 
-        avg_loss = total_loss / len(self.test_loader)
-        accuracy = correct / total
+        return total_loss / len(self.test_loader), correct / total
 
-        return avg_loss, accuracy
-
-    def fit(self, epochs):
-
-        best_acc = 0.0
+    def fit(self, epochs, patience=10):
 
         history = {
             "train_loss": [],
@@ -109,43 +87,41 @@ class Trainer:
             "test_acc": []
         }
 
-        os.makedirs("saved_models", exist_ok=True)
+        best_loss = float("inf")
+        best_state = None
+        counter = 0
 
-        for epoch in range(epochs):
+        for epoch in range(1, epochs + 1):
 
             train_loss, train_acc = self.train_epoch()
-
             test_loss, test_acc = self.evaluate()
 
             history["train_loss"].append(train_loss)
             history["train_acc"].append(train_acc)
-
             history["test_loss"].append(test_loss)
             history["test_acc"].append(test_acc)
 
-            if test_acc > best_acc:
-
-                best_acc = test_acc
-
-                torch.save({
-                    "model_state_dict": self.model.state_dict(),
-                    "input_dim": self.model.input_dim,
-                    "hidden_dim": self.model.hidden_dim,
-                    "num_classes": self.model.num_classes,
-                    "dataset": self.dataset_name
-                }, f"saved_models/{self.dataset_name}.pth")
-
-                print(
-                    f"New best model saved! "
-                    f"Acc: {best_acc:.4f}"
-                )
-
             print(
-                f"Epoch {epoch + 1}/{epochs} | "
-                f"Train Loss: {train_loss:.4f} | "
-                f"Train Acc: {train_acc:.4f} | "
-                f"Test Loss: {test_loss:.4f} | "
-                f"Test Acc: {test_acc:.4f}"
+                f"[Epoch {epoch}/{epochs}] "
+                f"train_loss={train_loss:.4f} | train_acc={train_acc:.4f} | "
+                f"test_loss={test_loss:.4f} | test_acc={test_acc:.4f}"
             )
+
+            if test_loss < best_loss:
+                best_loss = test_loss
+                best_state = {
+                    k: v.cpu().clone()
+                    for k, v in self.model.state_dict().items()
+                }
+                counter = 0
+            else:
+                counter += 1
+
+            if counter >= patience:
+                print(f"Early stopping triggered at epoch {epoch}")
+                break
+
+        if best_state is not None:
+            self.model.load_state_dict(best_state)
 
         return history

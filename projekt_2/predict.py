@@ -16,6 +16,7 @@ from models.mlp import MLP
 
 OUTPUT_DIR = "results"
 
+
 class Predictor:
 
     def __init__(self, dataset_name, model_path):
@@ -25,8 +26,14 @@ class Predictor:
 
         train, test = load_dataset(dataset_name)
 
+        self.X_train = torch.tensor(train.x.numpy(), dtype=torch.float32)
+        self.y_train = torch.tensor(train.y.numpy(), dtype=torch.long)
+
         self.X_test = torch.tensor(test.x.numpy(), dtype=torch.float32)
         self.y_test = torch.tensor(test.y.numpy(), dtype=torch.long)
+
+        self.classes = np.unique(self.y_test.numpy())
+        self.class_to_idx = {c: i for i, c in enumerate(self.classes)}
 
         os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -46,24 +53,18 @@ class Predictor:
 
         return model
 
-    def predict(self, model):
-
+    def _predict_tensor(self, model, X):
         with torch.no_grad():
-            logits = model(self.X_test)
-            y_pred = torch.argmax(logits, dim=1)
+            logits = model(X)
+            return torch.argmax(logits, dim=1).numpy()
 
-        return y_pred.numpy()
-
-    def evaluate(self, y_pred):
-
-        y_true = self.y_test.numpy()
+    def evaluate(self, y_true, y_pred):
 
         acc = accuracy_score(y_true, y_pred)
 
         print("\n====================================")
         print(f"DATASET: {self.dataset_name}")
         print("====================================")
-
         print(f"Accuracy: {acc:.4f}")
 
         print("\nClassification report:")
@@ -71,13 +72,14 @@ class Predictor:
 
         return y_true, y_pred
 
-    def save_confusion_matrix(self, y_true, y_pred):
-
+    def save_confusion_matrix(self, y_true, y_pred, split="test"):
         cm = confusion_matrix(y_true, y_pred)
 
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        acc = accuracy_score(y_true, y_pred)
 
         fig, ax = plt.subplots(figsize=(8, 8))
+
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 
         disp.plot(
             ax=ax,
@@ -86,35 +88,29 @@ class Predictor:
             colorbar=True
         )
 
-        plt.title(f"Confusion Matrix: {self.dataset_name}")
+        plt.title(
+            f"Confusion Matrix ({split}) | "
+            f"{self.dataset_name} | "
+            f"accuracy: {acc:.4f}"
+        )
 
         path = os.path.join(
             OUTPUT_DIR,
-            f"confusion_{self.dataset_name}.png"
+            f"confusion_{self.dataset_name}_{split}.png"
         )
 
         plt.savefig(path, bbox_inches="tight", dpi=150)
         plt.close()
 
-    def save_decision_boundary(
-            self,
-            model,
-            y_true
-    ):
+    def save_decision_boundary(self, model, y_true):
+
         if self.X_test.shape[1] != 2:
             return
 
         x = self.X_test.numpy()
 
-        x_min, x_max = (
-            x[:, 0].min() - 1,
-            x[:, 0].max() + 1
-        )
-
-        y_min, y_max = (
-            x[:, 1].min() - 1,
-            x[:, 1].max() + 1
-        )
+        x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
+        y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
 
         step = 0.02
 
@@ -123,37 +119,21 @@ class Predictor:
             np.arange(y_min, y_max, step)
         )
 
-        grid = np.c_[
-            xx.ravel(),
-            yy.ravel()
-        ]
+        grid = np.c_[xx.ravel(), yy.ravel()]
 
-        grid_tensor = torch.tensor(
-            grid,
-            dtype=torch.float32
-        )
+        grid_tensor = torch.tensor(grid, dtype=torch.float32)
 
         with torch.no_grad():
             logits = model(grid_tensor)
+            predictions = torch.argmax(logits, dim=1).numpy()
 
-            predictions = torch.argmax(
-                logits,
-                dim=1
-            )
-
-        predictions = predictions.numpy().reshape(xx.shape)
+        predictions = predictions.reshape(xx.shape)
 
         fig, ax = plt.subplots(figsize=(9, 7))
 
-        ax.contourf(
-            xx,
-            yy,
-            predictions,
-            alpha=0.35,
-            cmap="tab10"
-        )
+        ax.contourf(xx, yy, predictions, alpha=0.35, cmap="tab10")
 
-        scatter = ax.scatter(
+        ax.scatter(
             x[:, 0],
             x[:, 1],
             c=y_true,
@@ -163,63 +143,46 @@ class Predictor:
             s=20
         )
 
-        plt.title(
-            f"Decision Boundary: {self.dataset_name}"
-        )
-
+        plt.title(f"Decision Boundary: {self.dataset_name}")
         plt.xlabel("Feature 1")
         plt.ylabel("Feature 2")
-
         plt.grid(True)
 
         unique_classes = np.unique(y_true)
 
-        colors = plt.cm.tab10(
-            np.linspace(0, 1, len(unique_classes))
-        )
+        colors = plt.cm.tab10(np.linspace(0, 1, len(unique_classes)))
 
         legend_handles = [
-            Patch(
-                color=colors[i],
-                label=f"Digit {cls}"
-            )
+            Patch(color=colors[i], label=f"Class {cls}")
             for i, cls in enumerate(unique_classes)
         ]
 
-        ax.legend(
-            handles=legend_handles,
-            title="Classes",
-            loc="upper right"
-        )
+        ax.legend(handles=legend_handles, title="Classes", loc="upper right")
 
         path = os.path.join(
             OUTPUT_DIR,
             f"decision_boundary_{self.dataset_name}.png"
         )
 
-        plt.savefig(
-            path,
-            bbox_inches="tight",
-            dpi=150
-        )
-
+        plt.savefig(path, bbox_inches="tight", dpi=150)
         plt.close()
-
 
     def run(self):
 
         model = self.load_model()
 
-        y_pred = self.predict(model)
+        y_pred_test = self._predict_tensor(model, self.X_test)
+        y_pred_train = self._predict_tensor(model, self.X_train)
 
-        y_true, y_pred = self.evaluate(y_pred)
+        y_true_test = self.y_test.numpy()
+        y_true_train = self.y_train.numpy()
 
-        self.save_confusion_matrix(y_true, y_pred)
+        self.evaluate(y_true_test, y_pred_test)
 
-        self.save_decision_boundary(
-            model,
-            y_true
-        )
+        self.save_confusion_matrix(y_true_test, y_pred_test, "test")
+        self.save_confusion_matrix(y_true_train, y_pred_train, "train")
+
+        self.save_decision_boundary(model, y_true_test)
 
 
 def main():
