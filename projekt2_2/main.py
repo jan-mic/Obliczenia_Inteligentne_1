@@ -4,23 +4,29 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
 
-from model import CNN_Standard_Imagenette, CNN_2Features_Imagenette, CNN_Standard_MNIST, CNN_2Features_MNIST
+# Importy wszystkich modeli
+from model import MNIST_P1, MNIST_P1_2F, MNIST_P2, MNIST_P2_2F, IMAGENETTE_P1, IMAGENETTE_P1_2F, IMAGENETTE_P2, \
+    IMAGENETTE_P2_2F
 from dataset import get_mnist_datasets, get_imagenette_datasets, get_balanced_subset
 from train import Trainer
 from visualize import plot_accuracy_history, plot_confusion_matrix, plot_decision_boundaries, save_augmentation_samples
 
-EXPERIMENT_MODE = 1
-DATASET_NAME = "Imagenette"
-MODEL_CLASS = CNN_Standard_Imagenette
+# ==============================================================================
+# TRYB EKSPERYMENTU
+# 1 - Pojedyncza próba, pełny zbiór, generowanie wykresów (Zapis do eksperyment_1)
+# 2 - Wiele prób, zmiana rozmiarów zbiorów, zapis statystyk (Zapis do eksperyment_2)
+EXPERIMENT_MODE = 2
 
 
 # ==============================================================================
 
-def run_experiment(dataset_name, current_model_class):
+def run_experiment(dataset_name, current_model_class, save_dir):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"\n{'=' * 60}")
-    print(f"🚀 ROZPOCZYNAM EKSPERYMENT {EXPERIMENT_MODE} DLA ZBIORU: {dataset_name}")
+    print(
+        f"🚀 ROZPOCZYNAM EKSPERYMENT {EXPERIMENT_MODE} DLA ZBIORU: {dataset_name} | MODEL: {current_model_class.__name__}")
     print(f"💻 Używane urządzenie obliczeniowe: {device}")
+    print(f"📁 Wyniki zostaną zapisane w: {save_dir}")
     print(f"{'=' * 60}\n")
 
     # 1. POBIERANIE DANYCH
@@ -33,7 +39,13 @@ def run_experiment(dataset_name, current_model_class):
     else:
         raise ValueError("Nieobsługiwany zbiór danych.")
 
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=64,
+        shuffle=False,
+        num_workers=8,
+        pin_memory=True
+    )
 
     # 2. DOSTOSOWANIE PARAMETRÓW DO WYBRANEGO TRYBU
     if EXPERIMENT_MODE == 1:
@@ -41,18 +53,18 @@ def run_experiment(dataset_name, current_model_class):
         augmentations = {"Brak": train_base}
         num_trials = 1
 
-        print("=> Zapisywanie próbek augmentacji do folderu 'images'...")
-        save_augmentation_samples(train_base, train_aug1, "Augmentacja Osoby 1", dataset_name, num_samples=3)
-        save_augmentation_samples(train_base, train_aug2, "Augmentacja Osoby 2", dataset_name, num_samples=3)
+        print("=> Zapisywanie próbek augmentacji...")
+        save_augmentation_samples(train_base, train_aug1, "Augment_1", dataset_name, num_samples=3, save_dir=save_dir)
+        save_augmentation_samples(train_base, train_aug2, "Augment_2", dataset_name, num_samples=3, save_dir=save_dir)
 
     elif EXPERIMENT_MODE == 2:
         data_sizes = [100, 200, 1000, len(train_base)]
         augmentations = {
             "Brak": train_base,
-            "Augmentacja_Osoba1": train_aug1,
-            "Augmentacja_Osoba2": train_aug2
+            "Augment_1": train_aug1,
+            "Augment_2": train_aug2
         }
-        num_trials = 10
+        num_trials = 5
     else:
         raise ValueError("Nierozpoznany tryb eksperymentu (wybierz 1 lub 2).")
 
@@ -68,10 +80,16 @@ def run_experiment(dataset_name, current_model_class):
                 epochs = base_epochs
             else:
                 subset = get_balanced_subset(full_train_dataset, size)
-                epochs = min(int(base_epochs * (len(full_train_dataset) / size)), 20)
+                epochs = min(int(base_epochs * (len(full_train_dataset) / size)), 30)
                 print(f"Skalowanie epok do: {epochs}")
 
-            train_loader = DataLoader(subset, batch_size=32, shuffle=True)
+            train_loader = DataLoader(
+                subset,
+                batch_size=32,
+                shuffle=True,
+                num_workers=8,
+                pin_memory=True
+            )
 
             accuracy_results = []
             best_overall_acc = 0.0
@@ -81,14 +99,10 @@ def run_experiment(dataset_name, current_model_class):
             for i in range(num_trials):
                 print(f"  Próba {i + 1}/{num_trials} (Max Epok: {epochs})...")
 
-                # ==============================================================
-                # UŻYCIE KLASY TRAINER
-                # ==============================================================
                 model = current_model_class(num_classes=10).to(device)
                 criterion = nn.CrossEntropyLoss()
                 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-                # Inicjalizacja naszego nadzorcy
                 trainer = Trainer(
                     model=model,
                     train_loader=train_loader,
@@ -99,64 +113,112 @@ def run_experiment(dataset_name, current_model_class):
                     device=device
                 )
 
-                # Uruchomienie uczenia (zabezpieczone przez Early Stopping np. 5 epok)
                 history = trainer.fit(epochs=epochs, patience=5)
 
-                # Wyciągamy najwyższe accuracy z historii jako końcowy wynik tej próby
                 final_acc = max(history["test_acc"])
                 accuracy_results.append(final_acc)
                 print(f"  => Zakończono próbę {i + 1}. Najlepsze Acc: {final_acc:.4f}\n")
 
                 if final_acc > best_overall_acc:
                     best_overall_acc = final_acc
-                    # Model zapisany w 'trainer.model' ma już załadowane wagi z najlepszej epoki!
                     best_overall_model = trainer.model
                     best_train_hist = history["train_acc"]
                     best_test_hist = history["test_acc"]
-                # ==============================================================
 
-            # Podsumowanie z 10 prób (lub 1 próby)
             mean_acc = np.mean(accuracy_results)
             std_acc = np.std(accuracy_results)
             print(f"\n=> WYNIK ({size} danych): Średnia = {mean_acc:.4f}, Odchylenie = {std_acc:.4f}")
 
             # =================================================================
-            # ZAPISYWANIE MODELU I STATYSTYK DO ODPOWIEDNIEGO FOLDERU
+            # ⚙️ LOGIKA NAZEWNICTWA PLIKÓW (all_data lub wielkość zbioru)
             # =================================================================
-            save_dir = "models_exp_1" if EXPERIMENT_MODE == 1 else "models_exp_2"
-            os.makedirs(save_dir, exist_ok=True)
+            size_str = "all_data" if size == len(full_train_dataset) else f"size_{size}"
 
-            model_filename = os.path.join(save_dir,
-                                          f"model_{dataset_name}_{current_model_class.__name__}_{aug_name}_size{size}_acc{best_overall_acc:.2f}.pth")
+            # Zapisywanie wag modelu (.pth)
+            models_dir = os.path.join(save_dir, "models")
+            os.makedirs(models_dir, exist_ok=True)
+
+            model_filename = os.path.join(models_dir,
+                                          f"model_{current_model_class.__name__}_{aug_name}_{size_str}_acc{best_overall_acc:.2f}.pth")
             torch.save(best_overall_model.state_dict(), model_filename)
             print(f"=> Zapisano najlepszy model w: {model_filename}")
 
+            # Zapisywanie statystyk tekstowych (.txt) - tylko dla Eksperymentu 2
             if EXPERIMENT_MODE == 2:
-                wyniki_txt_path = os.path.join(save_dir, "wyniki_eksperymentow.txt")
+                wyniki_txt_path = os.path.join(save_dir, f"wyniki_eksperymentow_{size_str}.txt")
                 with open(wyniki_txt_path, "a", encoding="utf-8") as file:
                     file.write(
-                        f"Zbiór: {dataset_name} | Model: {current_model_class.__name__} | Augmentacja: {aug_name} | Rozmiar: {size}\n")
+                        f"Model: {current_model_class.__name__} | Augmentacja: {aug_name} | Rozmiar: {size_str}\n")
                     file.write(f"Średnia Accuracy: {mean_acc:.4f}\n")
                     file.write(f"Odchylenie Standardowe: {std_acc:.4f}\n")
                     file.write("-" * 65 + "\n")
                 print(f"=> Zapisano statystyki do pliku: {wyniki_txt_path}")
 
             # =================================================================
-            # 4. WIZUALIZACJA (Tylko w Eksperymencie 1)
+            # 4. WIZUALIZACJA
             # =================================================================
             if EXPERIMENT_MODE == 1:
                 print("=> Generowanie i wyświetlanie wykresów dla tego modelu...")
-                plot_accuracy_history(best_train_hist, best_test_hist, title=f"Krzywa uczenia ({dataset_name})")
+                plot_accuracy_history(best_train_hist, best_test_hist, title=f"Accuracy ({dataset_name})",
+                                      save_dir=save_dir)
                 plot_confusion_matrix(best_overall_model, test_loader, device, class_names=class_names,
-                                      title=f"Macierz_Pomylek_{dataset_name}_{current_model_class.__name__}")
+                                      title=f"confusion_matrix_{current_model_class.__name__}",
+                                      save_dir=save_dir)
 
-                if current_model_class in [CNN_2Features_MNIST, CNN_2Features_Imagenette]:
+                if current_model_class in [MNIST_P1_2F, MNIST_P2_2F, IMAGENETTE_P1_2F, IMAGENETTE_P2_2F]:
                     print("=> Generowanie mapy granic decyzyjnych...")
                     plot_decision_boundaries(best_overall_model, train_loader, device,
-                                             title=f"Granice decyzyjne - Trening ({dataset_name})")
+                                             title=f"Granice_decyzyjne_Trening_{dataset_name}", save_dir=save_dir)
                     plot_decision_boundaries(best_overall_model, test_loader, device,
-                                             title=f"Granice decyzyjne - Test ({dataset_name})")
+                                             title=f"Granice_decyzyjne_Test_{dataset_name}", save_dir=save_dir)
 
 
 if __name__ == '__main__':
-    run_experiment(DATASET_NAME, MODEL_CLASS)
+    # Ustalamy dynamicznie podfolder na podstawie aktywnego trybu eksperymentu
+    EXPERIMENT_MODE = 2
+    path = f"eksperyment_{EXPERIMENT_MODE}"
+
+    # # --- 1. PĘTLA DLA ZBIORU MNIST ---
+    # mnist_models = [MNIST_P1, MNIST_P1_2F, MNIST_P2, MNIST_P2_2F]
+    # print(f"=== Uruchamiam sekwencję dla {len(mnist_models)} modeli MNIST (Tryb: {EXPERIMENT_MODE}) ===")
+    #
+    # for _, model in enumerate(mnist_models, start=1):
+    #     run_experiment(
+    #         dataset_name="MNIST",
+    #         current_model_class=model,
+    #         save_dir=f"{path}/{model.__name__}"
+    #     )
+    #
+    # # --- 2. PĘTLA DLA ZBIORU IMAGENETTE ---
+    # imagenette_models = [IMAGENETTE_P1, IMAGENETTE_P1_2F, IMAGENETTE_P2, IMAGENETTE_P2_2F]
+    # print(f"\n=== Uruchamiam sekwencję dla {len(imagenette_models)} modeli Imagenette (Tryb: {EXPERIMENT_MODE}) ===")
+    #
+    # for _, model in enumerate(imagenette_models, start=1):
+    #     run_experiment(
+    #         dataset_name="Imagenette",
+    #         current_model_class=model,
+    #         save_dir=f"{path}/{model.__name__}"
+    #     )
+
+    ################################
+    # mnist_models = [MNIST_P1, MNIST_P1_2F]
+    # print(f"=== Uruchamiam sekwencję dla {len(mnist_models)} modeli MNIST (Tryb: {EXPERIMENT_MODE}) ===")
+    #
+    # for _, model in enumerate(mnist_models, start=1):
+    #     run_experiment(
+    #         dataset_name="MNIST",
+    #         current_model_class=model,
+    #         save_dir=f"{path}/{model.__name__}"
+    #     )
+
+    # --- 2. PĘTLA DLA ZBIORU IMAGENETTE ---
+    # Zostawiamy TYLKO najlepszy model
+    imagenette_models = [IMAGENETTE_P2, IMAGENETTE_P1_2F]
+    print(f"\n=== Uruchamiam sekwencję dla {len(imagenette_models)} modeli Imagenette (Tryb: {EXPERIMENT_MODE}) ===")
+
+    for _, model in enumerate(imagenette_models, start=1):
+        run_experiment(
+            dataset_name="Imagenette",
+            current_model_class=model,
+            save_dir=f"{path}/{model.__name__}"
+        )

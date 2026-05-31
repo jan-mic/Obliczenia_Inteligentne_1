@@ -6,8 +6,8 @@ import numpy as np
 from torchvision.utils import save_image
 
 
-def plot_accuracy_history(train_history, test_history, title="Krzywa uczenia (Accuracy)"):
-    """Rysuje wykres zmian accuracy dla zbioru treningowego i testowego."""
+def plot_accuracy_history(train_history, test_history, title="Krzywa uczenia (Accuracy)", save_dir="scores"):
+    """Rysuje wykres zmian accuracy dla zbioru treningowego i testowego w dynamicznym folderze."""
 
     # Tworzymy wektor numerów epok: [1, 2, 3, ..., N]
     epochs = range(1, len(train_history) + 1)
@@ -30,16 +30,18 @@ def plot_accuracy_history(train_history, test_history, title="Krzywa uczenia (Ac
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
 
-    import os
-    os.makedirs('charts_exp_1', exist_ok=True)
+    # Dynamiczne tworzenie ścieżki docelowej przy użyciu parametru save_dir
+    target_dir = os.path.join(save_dir, 'charts_exp_1')
+    os.makedirs(target_dir, exist_ok=True)
+
     safe_title = title.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
-    plt.savefig(f"charts_exp_1/{safe_title}.png")
+    plt.savefig(os.path.join(target_dir, f"{safe_title}.png"))
 
     plt.show()
 
 
-def plot_confusion_matrix(model, data_loader, device, class_names=None, title="Macierz_Pomylek"):
-    """Generuje i wyświetla macierz pomyłek używając wbudowanej metody scikit-learn."""
+def plot_confusion_matrix(model, data_loader, device, class_names=None, title="Macierz_Pomylek", save_dir="scores"):
+    """Generuje i wyświetla macierz pomyłek w dynamicznym folderze docelowym."""
     model.eval()
     all_preds = []
     all_labels = []
@@ -63,19 +65,21 @@ def plot_confusion_matrix(model, data_loader, device, class_names=None, title="M
     # xticks_rotation=45 pochyla etykiety, żeby się nie nakładały (przydatne dla Imagenette)
     disp.plot(cmap=plt.cm.Blues, ax=ax, xticks_rotation=45)
 
-    plt.title('Macierz Pomyłek', pad=20)
+    plt.title('Confusion Matrix', pad=20)
     plt.tight_layout()
 
-    # Zapis i wyświetlanie
-    os.makedirs('charts_exp_1', exist_ok=True)
+    # Dynamiczne tworzenie ścieżki docelowej
+    target_dir = os.path.join(save_dir, 'charts_exp_1')
+    os.makedirs(target_dir, exist_ok=True)
+
     safe_title = title.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
-    plt.savefig(f"charts_exp_1/{safe_title}.png")
+    plt.savefig(os.path.join(target_dir, f"{safe_title}.png"))
 
     plt.show()
 
 
-def plot_decision_boundaries(model, data_loader, device, title="Granice decyzyjne (2 cechy)"):
-    """Rysuje granice decyzyjne dla modeli posiadających wąskie gardło na 2 cechy."""
+def plot_decision_boundaries(model, data_loader, device, title="Granice decyzyjne (2 cechy)", save_dir="scores"):
+    """Rysuje granice decyzyjne dla modeli posiadających wąskie gardło na 2 cechy w dynamicznym folderze."""
     model.eval()
     features_2d = []
     labels_list = []
@@ -118,18 +122,21 @@ def plot_decision_boundaries(model, data_loader, device, title="Granice decyzyjn
     plt.ylabel("Cecha 2")
     plt.tight_layout()
 
-    # 1. Tworzenie folderu i zapis
-    os.makedirs('charts_exp_1', exist_ok=True)
-    safe_title = title.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
-    plt.savefig(f"charts_exp_1/{safe_title}.png")
+    # Dynamiczne tworzenie ścieżki docelowej
+    target_dir = os.path.join(save_dir, 'charts_exp_1')
+    os.makedirs(target_dir, exist_ok=True)
 
-    # 2. Wyświetlanie na ekranie
+    safe_title = title.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
+    plt.savefig(os.path.join(target_dir, f"{safe_title}.png"))
+
+    # Wyświetlanie na ekranie
     plt.show()
 
 
-def save_augmentation_samples(original_dataset, aug_dataset, aug_name, dataset_name, num_samples=3):
-    """Zapisuje obrazy przed i po augmentacji jako osobne pliki graficzne."""
-    os.makedirs('images', exist_ok=True)
+def save_augmentation_samples(original_dataset, aug_dataset, aug_name, dataset_name, num_samples=3, save_dir="scores"):
+    """Zapisuje obrazy przed i po augmentacji jako osobne pliki graficzne w dynamicznym folderze."""
+    target_dir = os.path.join(save_dir, 'images')
+    os.makedirs(target_dir, exist_ok=True)
     safe_aug_name = aug_name.replace(" ", "_")
 
     for i in range(num_samples):
@@ -149,10 +156,10 @@ def save_augmentation_samples(original_dataset, aug_dataset, aug_name, dataset_n
         orig_img = orig_img.clamp(0, 1)
         aug_img = aug_img.clamp(0, 1)
 
-        orig_filename = f"images/{dataset_name}_probka{i + 1}_1_Oryginal.png"
-        aug_filename = f"images/{dataset_name}_probka{i + 1}_2_{safe_aug_name}.png"
+        orig_filename = os.path.join(target_dir, f"{dataset_name}_probka{i + 1}_1_Oryginal.png")
+        aug_filename = os.path.join(target_dir, f"{dataset_name}_probka{i + 1}_2_{safe_aug_name}.png")
 
         save_image(orig_img, orig_filename)
         save_image(aug_img, aug_filename)
 
-    print(f"=> Zapisano {num_samples * 2} plików graficznych dla '{aug_name}' do folderu 'images/'.")
+    print(f"=> Zapisano {num_samples * 2} plików graficznych dla '{aug_name}' do folderu '{target_dir}'.")
