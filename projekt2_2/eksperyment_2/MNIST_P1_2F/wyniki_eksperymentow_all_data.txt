@@ -1,0 +1,12 @@
+Model: MNIST_P1_2F | Augmentacja: Brak | Rozmiar: all_data
+Średnia Accuracy: 0.9881
+Odchylenie Standardowe: 0.0013
+-----------------------------------------------------------------
+Model: MNIST_P1_2F | Augmentacja: Augment_1 | Rozmiar: all_data
+Średnia Accuracy: 0.9894
+Odchylenie Standardowe: 0.0010
+-----------------------------------------------------------------
+Model: MNIST_P1_2F | Augmentacja: Augment_2 | Rozmiar: all_data
+Średnia Accuracy: 0.9890
+Odchylenie Standardowe: 0.0014
+-----------------------------------------------------------------

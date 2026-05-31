@@ -1,0 +1,12 @@
+Model: MNIST_P1 | Augmentacja: Brak | Rozmiar: size_200
+Średnia Accuracy: 0.9030
+Odchylenie Standardowe: 0.0116
+-----------------------------------------------------------------
+Model: MNIST_P1 | Augmentacja: Augment_1 | Rozmiar: size_200
+Średnia Accuracy: 0.9163
+Odchylenie Standardowe: 0.0086
+-----------------------------------------------------------------
+Model: MNIST_P1 | Augmentacja: Augment_2 | Rozmiar: size_200
+Średnia Accuracy: 0.9236
+Odchylenie Standardowe: 0.0049
+-----------------------------------------------------------------

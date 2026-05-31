@@ -1,0 +1,12 @@
+Model: IMAGENETTE_P2 | Augmentacja: Brak | Rozmiar: size_100
+Średnia Accuracy: 0.2797
+Odchylenie Standardowe: 0.0078
+-----------------------------------------------------------------
+Model: IMAGENETTE_P2 | Augmentacja: Augment_1 | Rozmiar: size_100
+Średnia Accuracy: 0.2722
+Odchylenie Standardowe: 0.0115
+-----------------------------------------------------------------
+Model: IMAGENETTE_P2 | Augmentacja: Augment_2 | Rozmiar: size_100
+Średnia Accuracy: 0.2542
+Odchylenie Standardowe: 0.0227
+-----------------------------------------------------------------
