@@ -74,7 +74,6 @@ def get_imagenette_datasets():
         transforms.Normalize(mean, std)
     ])
 
-    # 3. Tworzymy ostateczne zbiory danych
     train_base = torchvision.datasets.Imagenette(root='./data', split='train', download=True, transform=base_transform)
     train_aug1 = torchvision.datasets.Imagenette(root='./data', split='train', download=True, transform=aug_person1)
     train_aug2 = torchvision.datasets.Imagenette(root='./data', split='train', download=True, transform=aug_person2)

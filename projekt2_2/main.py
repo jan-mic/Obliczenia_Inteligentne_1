@@ -21,7 +21,7 @@ def run_experiment(dataset_name, current_model_class, save_dir):
         base_epochs = 15
     elif dataset_name == "Imagenette":
         train_base, train_aug1, train_aug2, test_dataset, class_names, input_channels = get_imagenette_datasets()
-        base_epochs = 20
+        base_epochs = 15
 
     test_loader = DataLoader(
         test_dataset,
@@ -34,7 +34,7 @@ def run_experiment(dataset_name, current_model_class, save_dir):
     if EXPERIMENT_MODE == 1:
         data_sizes = [len(train_base)]
         augmentations = {"Brak": train_base}
-        num_trials = 1
+        num_training = 1
 
         save_augmentation_samples(train_base, train_aug1, "Augment_1", dataset_name, num_samples=3, save_dir=save_dir)
         save_augmentation_samples(train_base, train_aug2, "Augment_2", dataset_name, num_samples=3, save_dir=save_dir)
@@ -46,7 +46,7 @@ def run_experiment(dataset_name, current_model_class, save_dir):
             "Augment_1": train_aug1,
             "Augment_2": train_aug2
         }
-        num_trials = 10
+        num_training = 10
 
     for aug_name, full_train_dataset in augmentations.items():
         print(f"\nAugmentacja: {aug_name}")
@@ -74,8 +74,8 @@ def run_experiment(dataset_name, current_model_class, save_dir):
             best_overall_model = None
             best_train_hist, best_test_hist = [], []
 
-            for i in range(num_trials):
-                print(f"Trening {i + 1}/{num_trials}")
+            for i in range(num_training):
+                print(f"Trening {i + 1}/{num_training}")
 
                 model = current_model_class(num_classes=10).to(device)
                 criterion = nn.CrossEntropyLoss()
@@ -111,7 +111,7 @@ def run_experiment(dataset_name, current_model_class, save_dir):
             models_dir = os.path.join(save_dir, "models")
             os.makedirs(models_dir, exist_ok=True)
             model_filename = os.path.join(models_dir,
-                                          f"model_{current_model_class.__name__}_{aug_name}_{size_name}_acc{best_overall_acc:.2f}.pth")
+                                          f"model_{current_model_class.__name__}_{aug_name}_{size_name}_acc{best_overall_acc:.4f}.pth")
             torch.save(best_overall_model.state_dict(), model_filename)
 
             if EXPERIMENT_MODE == 2:
@@ -159,6 +159,7 @@ if __name__ == '__main__':
         )
 
     EXPERIMENT_MODE = 2
+    file_path = f"eksperyment_{EXPERIMENT_MODE}"
     mnist_models = [MNIST_P1, MNIST_P1_2F]
     for model in mnist_models:
         run_experiment(
@@ -167,7 +168,7 @@ if __name__ == '__main__':
             save_dir=f"{file_path}/{model.__name__}"
         )
 
-    imagenette_models = [IMAGENETTE_P2, IMAGENETTE_P1_2F]
+    imagenette_models = [IMAGENETTE_P1, IMAGENETTE_P1_2F]
     for model in imagenette_models:
         run_experiment(
             dataset_name="Imagenette",
