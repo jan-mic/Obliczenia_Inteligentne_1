@@ -1,15 +1,16 @@
 import torch
 
+
 class Trainer:
     def __init__(
-        self,
-        model,
-        train_loader,
-        test_loader,
-        criterion,
-        optimizer,
-        dataset_name,
-        device="cpu"
+            self,
+            model,
+            train_loader,
+            test_loader,
+            criterion,
+            optimizer,
+            dataset_name,
+            device="cpu"
     ):
         self.model = model.to(device)
         self.train_loader = train_loader
@@ -104,7 +105,7 @@ class Trainer:
                 counter += 1
 
             if counter >= patience:
-                print(f"    => Early stopping triggered at epoch {epoch}")
+                print(f"Early stopping | epoch: {epoch}")
                 break
 
         if best_state is not None:
