@@ -98,17 +98,34 @@ def compute_all_attributions(model, input_tensor, target_class, device="cpu", us
 # 3. ANALIZA DANYCH TABELARYCZNYCH (WYKRESY SŁUPKOWE)
 # ==============================================================================
 def plot_style_bar(attributions, feature_names, title, ylabel, filename):
-    """Funkcja pomocnicza: generuje wykres słupkowy, zoptymalizowany dla danych tabelarycznych."""
-    fig, ax = plt.subplots(figsize=(10, 5))
+    """Generuje wykres słupkowy dla atrybucji z automatycznym skalowaniem."""
+
+    width = max(10, len(feature_names) * 0.4)
+    fig, ax = plt.subplots(figsize=(width, 6))
     fig.patch.set_facecolor('white')
 
     bar_color = '#4c72b0'
-    ax.bar(range(len(attributions)), attributions, color=bar_color, edgecolor='none', width=0.6)
+    ax.bar(
+        range(len(attributions)),
+        attributions,
+        color=bar_color,
+        edgecolor='none',
+        width=0.6
+    )
 
     ax.set_title(title, fontsize=12, pad=15)
     ax.set_ylabel(ylabel, fontsize=10)
     ax.axhline(0, color='black', linewidth=0.8)
-    ax.set_ylim(-2, 2)
+
+    # Automatyczne skalowanie osi Y
+    max_abs = np.max(np.abs(attributions))
+
+    if max_abs > 0:
+        margin = max_abs * 0.1
+        ax.set_ylim(
+            -max_abs - margin,
+            max_abs + margin
+        )
 
     ax.grid(axis='y', linestyle='-', alpha=0.5, color='#cccccc')
     ax.set_axisbelow(True)
@@ -119,15 +136,32 @@ def plot_style_bar(attributions, feature_names, title, ylabel, filename):
 
     ax.set_xticks(range(len(feature_names)))
 
-    # Przygotowanie podpisów (tylko numery, jeśli użyto schematu Zmienna_X)
-    clean_labels = [str(name).split('_')[-1] if '_' in str(name) else str(name) for name in feature_names]
-    ax.set_xticklabels(clean_labels, rotation=0, ha='center', fontsize=7)
+    clean_labels = [
+        str(name).split('_')[-1]
+        if '_' in str(name)
+        else str(name)
+        for name in feature_names
+    ]
+
+    ax.set_xticklabels(
+        clean_labels,
+        rotation=45,
+        ha='right',
+        rotation_mode='anchor',
+        fontsize=8
+    )
 
     plt.tight_layout()
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.close(fig)
 
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    plt.savefig(
+        filename,
+        dpi=300,
+        bbox_inches='tight'
+    )
+
+    plt.close(fig)
 
 def analyze_tabular(model, input_tensor, target_class, feature_names, dataset_name="Zbiór_Tabelaryczny", device="cpu",
                     use_slic=False):
