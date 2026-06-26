@@ -92,6 +92,8 @@ def main(dataset_name="mnist_flatten"):
 
         final_acc = history["test_acc"][-1]
 
+        _test_loss, final_acc = trainer.evaluate()
+
         if final_acc > best_accuracy:
             best_accuracy = final_acc
 

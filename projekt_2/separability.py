@@ -4,6 +4,7 @@ import torch
 import matplotlib.pyplot as plt
 
 from matplotlib.patches import Patch
+from sklearn.cluster import KMeans, DBSCAN
 
 from sklearn.metrics import (
     adjusted_rand_score,
@@ -187,6 +188,39 @@ class SeparabilityAnalyzer:
             "ari": ari,
             "homogeneity": homogeneity,
             "completeness": completeness,
+        }
+
+    def analyze_model2(self):
+
+        n_clusters = len(np.unique(self.y_train))
+        kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+        y_pred_kmeans = kmeans.fit_predict(self.X_train)
+
+        kmeans_ari = adjusted_rand_score(self.y_train, y_pred_kmeans)
+        kmeans_homo = homogeneity_score(self.y_train, y_pred_kmeans)
+        kmeans_comp = completeness_score(self.y_train, y_pred_kmeans)
+        kmeans_sil = silhouette_score(self.X_train, y_pred_kmeans, random_state=42)
+
+        print(f"K-Means -> ARI: {kmeans_ari:.4f} | Homo: {kmeans_homo:.4f} | Comp: {kmeans_comp:.4f}")
+
+        ##
+        dbscan = DBSCAN(eps=0.5, min_samples=1)
+        y_pred_dbscan = dbscan.fit_predict(self.X_train)
+
+        dbscan_ari = adjusted_rand_score(self.y_train, y_pred_dbscan)
+        dbscan_homo = homogeneity_score(self.y_train, y_pred_dbscan)
+        dbscan_comp = completeness_score(self.y_train, y_pred_dbscan)
+        dbscan_sil = silhouette_score(self.X_train, y_pred_dbscan, random_state=42)
+
+        dbscan_found_clusters = len(set(y_pred_dbscan)) - (1 if -1 in y_pred_dbscan else 0)
+        print(f"DBSCAN  -> Znaleziono klastrów: {dbscan_found_clusters}")
+        print(f"DBSCAN  -> ARI: {dbscan_ari:.4f} | Homo: {dbscan_homo:.4f} | Comp: {dbscan_comp:.4f}")
+
+        return {
+            "clusters": y_pred_kmeans,
+            "ari": kmeans_ari,
+            "homogeneity": kmeans_homo,
+            "completeness": kmeans_comp,
         }
 
     def run(self):
